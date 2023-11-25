@@ -8,6 +8,10 @@ import re
 import time 
 # alternativa para el módulo time: 'from time import sleep' y luego usar solo 'sleep()' o solo 'localtime()'
 
+# MODULOS PROPIOS
+from locators import LocatorsClass as loc
+
+
 ### CREDENCIALES:
 try:
     user_email = ''
@@ -82,7 +86,8 @@ except AssertionError as err:
 # Apaño temporal para que cargue bien la ventana de cookies y no ejecute el btn_cookies antes de tiempo causando un error ----------------------------------------------
 time.sleep(1) #---------------------------------------------------------------------------------------------------------------------------------------------------------
 # detectamos si existe un boton de cookies, y las rechazamos. Si este no existe, seguimos
-btn_cookies = driver.find_element(By.XPATH, '//button[@title="Rechazar cookies opcionales"]')
+# Usar *loc.COOKIES permite desempaquetar la tupla
+btn_cookies = driver.find_element(*loc.COOKIES)
 if btn_cookies:
     print('Rechazando cookies opcionales')
     btn_cookies.click()
@@ -98,13 +103,13 @@ def facebook_login():
         time.sleep(15)
         driver.close()
     try:
-        usuario_inicio_sesion = driver.find_element(By.ID, "email")
+        usuario_inicio_sesion = driver.find_element(*loc.LOGIN_EMAIL)
         usuario_inicio_sesion.clear()
         usuario_inicio_sesion.send_keys(user_email)
-        contraseña_inicio_sesion = driver.find_element(By.ID, "pass")
+        contraseña_inicio_sesion = driver.find_element(*loc.LOGIN_PASS)
         contraseña_inicio_sesion.clear()
         contraseña_inicio_sesion.send_keys(user_password)
-        btn_inicio_sesion = driver.find_element(By.XPATH, "//button[@name='login']")
+        btn_inicio_sesion = driver.find_element(*loc.LOGIN_BTN)
         btn_inicio_sesion.click()
         print('Iniciando sesión...')
         intentos_inicio_sesion += 1
@@ -116,7 +121,7 @@ def facebook_login():
     try:            
         try:
             # Localizamos y clicamos en btn: ¿Has olvidado la contraseña?
-            btn_olvidado_contraseña = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.CLASS_NAME, '_97w4')))
+            btn_olvidado_contraseña = WebDriverWait(driver, 5).until(EC.presence_of_element_located(loc.LOGIN_FORGOTTEN_PASS_LINK))
             btn_olvidado_contraseña.click()
             ask_user_password()
             driver.find_element(By.ID, "pass").clear()
@@ -124,14 +129,14 @@ def facebook_login():
             driver.find_element(By.XPATH, "//button[@name='login']").click()
         except:
             # Detectar algún mensaje de error en el inicio de sesión
-            WebDriverWait(driver, 0).until(EC.presence_of_element_located((By.CLASS_NAME, '_9ay7')))
+            WebDriverWait(driver, 0).until(EC.presence_of_element_located(loc.LOGIN_ERR_MSG))
             print('Error al iniciar sesión. Introduzca los credenciales de nuevo.')
             ask_user_email()
             ask_user_password()
             facebook_login()
     except:
         # Localizar el boton de grupos de Facebook. Significa que hemos iniciado sesión con éxito.
-        WebDriverWait(driver, 0).until(EC.presence_of_element_located((By.XPATH, '//a[@aria-label="Grupos" or @aria-label="Groups" or @href="https://www.facebook.com/groups/?ref=bookmarks"]')))
+        WebDriverWait(driver, 0).until(EC.presence_of_element_located(loc.GROUPS_BTN))
 
 facebook_login()
 print('Sesión iniciada con éxito')
@@ -139,7 +144,7 @@ print('Sesión iniciada con éxito')
 ### IR A TUS GRUPOS
 try:
     # busco el enlace a grupos y le doy click
-    btn_grupos = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//a[@aria-label="Grupos" or @aria-label="Groups" or @href="https://www.facebook.com/groups/?ref=bookmarks"]')))
+    btn_grupos = WebDriverWait(driver, 10).until(EC.presence_of_element_located(loc.GROUPS_BTN))
     print('Dirigiendome a grupos')
     btn_grupos.click()
 except Exception as err:
@@ -241,7 +246,7 @@ for link in arr_links_grupos_obtenidos:
         driver.get(link)
         # Espera a que cargue el escribe algo box y localizamos el elemento para clicarlo posteriormente
         # (Creamos una tupla para que el webdriverwait espere a que el elemento se localize (max 10s). * la tupla hace de unico argumento para el EC)
-        escribe_algo_box = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//span[contains(text(), "Escribe algo")]')))
+        escribe_algo_box = WebDriverWait(driver, 10).until(EC.presence_of_element_located(loc.GROUP_WRITE_STG_LINEBOX))
         escribe_algo_box.click()
         # Informar del porcentage completado del script total
         informe_porcenataje_completado()
@@ -251,11 +256,11 @@ for link in arr_links_grupos_obtenidos:
     dismiss_alert()
     try:
         # (Creamos una tupla para que el webdriverwait espere a que el elemento se localize (max 10s). * la tupla hace de unico argumento para el EC)
-        crea_una_publicacion_publica = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//div[contains(@class, "_1mf") and contains(@class, "_1mj")]')))
+        crea_una_publicacion_publica = WebDriverWait(driver, 10).until(EC.presence_of_element_located(loc.POST_WRITE_BOX))
         crea_una_publicacion_publica.send_keys(contenido_publicacion)
         try:
             # Si sale un cuadro de texto sobre "Información adicional sobre este contenido" le damos a "Compartir de todas formas"
-            popup_adicional_al_pegar_link = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.XPATH, '//span[text()="Compartir de todas formas"]')))
+            popup_adicional_al_pegar_link = WebDriverWait(driver, 3).until(EC.presence_of_element_located(loc.WARNING_LINK_POPUP))
             popup_adicional_al_pegar_link.click()
         except:
             print('No ha aparecido ningún problema con agregar el link en la publicación. Continuando...')
@@ -269,7 +274,7 @@ for link in arr_links_grupos_obtenidos:
     dismiss_alert()
     try:
         # (Creamos una tupla para que el webdriverwait espere a que el elemento se localize (max 10s). * la tupla hace de unico argumento para el EC)
-        btn_publicar = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//div[@aria-label="Publicar"]')))
+        btn_publicar = WebDriverWait(driver, 10).until(EC.presence_of_element_located(loc.POST_BTN))
         btn_publicar.click()
         # Informar del porcentage completado del script total
         informe_porcenataje_completado()
@@ -277,7 +282,7 @@ for link in arr_links_grupos_obtenidos:
         print(f'Error 3 de tipo {type(err).__name__} - Click en el boton Publicar --> {err}')
         
     # Esperar a que el boton de Publicar desaparezca
-    btn_publicar = WebDriverWait(driver, 10).until_not(EC.presence_of_element_located((By.XPATH, '//div[@aria-label="Publicar"]')))
+    btn_publicar = WebDriverWait(driver, 10).until_not(EC.presence_of_element_located(loc.POST_BTN))
     
     #Se vuelve a ejecutar el bucle for, hasta que no queden mas links en el arr 
 
