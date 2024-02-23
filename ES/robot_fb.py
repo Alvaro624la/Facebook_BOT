@@ -141,8 +141,20 @@ def ir_a_grupos():
 ################################ OBTENER LINKS DE GRUPOS ################################
 
 def obtener_links_grupos():
-    # Encontrar todos los enlaces de grupos en la url actual
-    all_links = driver.find_elements(By.XPATH, '//a')
+    #########################################################################################
+    ############# EN CASO DE NO ENTRAR EN BOTON GRUPOS > TUS GRUPOS: ########################
+
+    # Encontrar todos los enlaces de grupos en la url actual, que no tengan el panel principal role"main" como elemento padre (para no obtener links de grupos sugeridos)
+    # all_links = driver.find_elements(By.XPATH, '//a[not(ancestor::div[@role="main"])]')
+
+    #########################################################################################
+    #################### ENTRAR EN BOTON GRUPOS > TUS GRUPOS: ###############################
+    driver.get("https://www.facebook.com/groups/joins/?nav_source=tab&ordering=viewer_added")
+    WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//div[@role="main"]')))
+    # Buscar todos los links dentro del panel principal --> div con role="main"
+    all_links = driver.find_elements(By.XPATH, '//div[@role="main"]//a')
+    #########################################################################################
+
     # Declaramos la variable donde definiremos el array de tipo set que usaremos para almacenar todos los links que sean de grupos
     arr_links_grupos_obtenidos = set([])
 
@@ -199,13 +211,17 @@ def crear_post():
             break
     post = "\n".join(lineas)
     
-    # El usuario revisa su post y confirma para proceder a compartir, si no, vuelve a escribir el post de nuevo
-    print("\nTu post será el siguiente:")
-    print(post)
-    ask_if_secure_post = input('Estas seguro de querer publicarlo en todos los grupos (s/n): ')
-    if ask_if_secure_post.lower() not in ['y', 'yes', 's', 'si'] : crear_post()
+    if post.strip() == '':
+        print('Error: Sin contenido. Por favor, escribe o introduce contenido para generar el post.')
+        crear_post()
+    else:
+        # El usuario revisa su post y confirma para proceder a compartir, si no, vuelve a escribir el post de nuevo
+        print("\nTu post será el siguiente:")
+        print(post)
+        ask_if_secure_post = input('Estas seguro de querer publicarlo en todos los grupos (s/n): ')
+        if ask_if_secure_post.lower() not in ['y', 'yes', 's', 'si'] : crear_post()
 
-    return post
+        return post
 
 
 ################################# EL USUARIO ESCRIBE EL POST DESEADO #################################
@@ -225,8 +241,6 @@ def dismiss_alert():
 
 # Recorremos el array con todos los links de grupos y publicamos en cada uno
 def publicar_en_cada_grupo():
-    ## Creación de post (antes del bucle)
-    contenido_publicacion = crear_post()
     for link in arr_links_grupos_obtenidos:
         
         dismiss_alert()
@@ -272,7 +286,7 @@ def publicar_en_cada_grupo():
         # Esperar a que el boton de Publicar desaparezca
         btn_publicar = WebDriverWait(driver, 10).until_not(EC.presence_of_element_located(loc.POST_BTN))
         
-        #Se vuelve a ejecutar el bucle for, hasta que no queden mas links en el arr 
+        #Se vuelve a ejecutar el bucle for, hasta que no queden mas links en el arr --> arr_links_grupos_obtenidos
 
 ################################# ABRIR LINKS Y PUBLICAR #################################
 ##########################################################################################
@@ -290,27 +304,32 @@ def mensage_final_cerrar_bot():
     print("  \__, |_|  \__,_|\___|_|\__,_|___/ ")
     print("   __/ |                            ")
     print("  |___/   ")
-    time.sleep(10)
+    time.sleep(7)
+    print('Cerrando en 3 segundos')
+    time.sleep(1)
+    print('Cerrando en 2 segundos')
+    time.sleep(1)
+    print('Cerrando en 1 segundo')
+    time.sleep(1)
     driver.close()
 
-### FUNCIONES:
+############################################################################
+################################# FUNCIONES ################################
+############################################################################
 open_url_after_driver_config()
 verify_page_title()
 cookies()
-############################################################################
 ###################### Iniciar sesión automáticamente ######################
-
-# Para iniciar sesión automáticamente, puedes añadir tus datos entre comillas así: 
+# Para iniciar sesión automáticamente, puedes añadir tus datos entre comillas (simples o dobles) así: 
 ##### ...ask_user_email('aquí_tu_email')
 ##### ...ask_user_password('aquí_tu_contraseña')
 # aquí debajo:
 user_email = ask_user_email()
 user_password = ask_user_password()
-
 ############################################################################
 facebook_login()
 ir_a_grupos()
 arr_links_grupos_obtenidos = obtener_links_grupos()
+contenido_publicacion = crear_post()
 publicar_en_cada_grupo()
 mensage_final_cerrar_bot()
-#
