@@ -37,6 +37,9 @@ Build the complete executable folder
 - Enjoy!
 
 ## Technical details
+### Requeriments:
+- Chrome Driver: Go to https://chromedriver.chromium.org/downloads to download the correct ChromeDriver version, equivalent to your Google Chrome version.
+
 ### Extra requeriments:
 - Google Chrome
 
