@@ -30,6 +30,7 @@ Install cx-Freeze in your terminal:
 
 Build the complete executable folder
 - ```pyinstaller py_file_name.py``` 
+Example: pyinstaller robot_fb.py
 
 ## How access to this executable proyect?
 - Enter into "**dist/py_file_name**" folder

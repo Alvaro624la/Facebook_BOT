@@ -1,5 +1,5 @@
-('D:\\DESARROLLO FrontEnd\\Projects\\Automatizaciones Python\\Facebook '
- 'BOT\\ES\\build\\robot_fb\\PYZ-00.pyz',
+('D:\\DESARROLLO '
+ 'FrontEnd\\Projects\\Facebook_BOT\\ES\\build\\robot_fb\\PYZ-00.pyz',
  [('__future__',
    'C:\\Users\\Alvaro_de_Prado\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\__future__.py',
    'PYMODULE'),
@@ -272,6 +272,9 @@
    'PYMODULE'),
   ('json.scanner',
    'C:\\Users\\Alvaro_de_Prado\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\scanner.py',
+   'PYMODULE'),
+  ('locators',
+   'D:\\DESARROLLO FrontEnd\\Projects\\Facebook_BOT\\ES\\locators.py',
    'PYMODULE'),
   ('logging',
    'C:\\Users\\Alvaro_de_Prado\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\logging\\__init__.py',

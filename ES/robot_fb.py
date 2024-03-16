@@ -74,10 +74,10 @@ def cookies():
     # Usar *loc.COOKIES permite desempaquetar la tupla
     if(driver.find_element(*loc.COOKIES_ES)):
         btn_cookies = driver.find_element(*loc.COOKIES_ES)
-    if(driver.find_element(*loc.COOKIES_CA)):
-        btn_cookies = driver.find_element(*loc.COOKIES_CA)
-    if(driver.find_element(*loc.COOKIES_EN)):
-        btn_cookies = driver.find_element(*loc.COOKIES_EN)
+    # if(driver.find_element(*loc.COOKIES_CA)):
+    #     btn_cookies = driver.find_element(*loc.COOKIES_CA)
+    # if(driver.find_element(*loc.COOKIES_EN)):
+    #     btn_cookies = driver.find_element(*loc.COOKIES_EN)
 
     if btn_cookies:
         print('Rechazando cookies opcionales')
@@ -128,6 +128,7 @@ def facebook_login():
     except:
         # Localizar el boton de grupos de Facebook. Significa que hemos iniciado sesión con éxito.
         WebDriverWait(driver, 999).until(EC.presence_of_element_located(loc.GROUPS_BTN))
+        # pongo 999 de espera por si la cuenta tiene verificacion en dos pasos con el movil para dar tiempo a completarla y entrar en facebook, y seguir el proceso
 
 
 ### IR A TUS GRUPOS
@@ -139,7 +140,7 @@ def ir_a_grupos():
         print('Dirigiendome a grupos')
         btn_grupos.click()
     except Exception as err:
-        print(f'Error de tipo "{type(err).__name__}" al buscar el enlace a grupos --> {err}')
+        # print(f'Error de tipo "{type(err).__name__}" al buscar el enlace a grupos --> {err}')
         print('Yendo a grupos través de URL específica .../groups/feed/')
         driver.get("https://www.facebook.com/groups/feed/")
 
@@ -163,13 +164,16 @@ def obtener_obj_grupos():
     # bajar pagina hasta abajo para cargar todos los grupos 
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
     # Esperar un momento para que la página cargue completamente
-    import time
     time.sleep(3)
     # bajar página de nuevo por si acaso
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    time.sleep(1)
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    time.sleep(1)
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    time.sleep(1)
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    time.sleep(1)
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
     # dentro de --> 
@@ -217,34 +221,44 @@ def obtener_obj_grupos():
                 new_obj['title'] = title
                 arr_obj_grupos_obtenidos.append(new_obj)
 
-                print('arr_obj_grupos_obtenidos-------------------------------------------------------------------------------------')
-                print(len(arr_obj_grupos_obtenidos))
+                # print('arr_obj_grupos_obtenidos-------------------------------------------------------------------------------------')
+                # print(len(arr_obj_grupos_obtenidos))
+                print('Obtención de links: grupo obtenido')
         except Exception as err:
-            print('a_tag: ')
-            print(err)
-        print('link existe')
+            print('Obtención de links: procesando...')
+
+            # print('a_tag: ')
+            # print(err)
+        print('Obtención de links: link ya existente')
     return arr_obj_grupos_obtenidos
 
 def js_function():
     # Elegir grupos donde publicar (internamente: agregar o quitar links de los grupos del array --> arr_links_grupos_obtenidos y agregarlos al arr final de links --> arr_links_grupos_seleccionados)
     # arr_obj_prueba = ['https://www.facebook.com/groups/740970037910764', 'https://www.facebook.com/groups/867005741560869']
     # arr_obj_grupos_obtenidos_ej = [{'index': 0, 'link': 'https://www.facebook.com/groups/1113068039716987', 'img_url': 'https://scontent-mad1-1.xx.fbcdn.net/v/t39.30808-6/429679221_2579686565547152_5684308905641758804_n.jpg?stp=cp0_dst-jpg_s110x80&_nc_cat=103&ccb=1-7&_nc_sid=aae68a&_nc_ohc=mgnzalFHSQkAX9lcfZY&_nc_ht=scontent-mad1-1.xx&oh=00_AfDGcA6adJsCdZYMLOWO1fj5DIH7wZhnJA0_6woVj8y7nw&oe=65E94F31', 'title': 'pruebas alvaro 2'}, {'index': 1, 'link': 'https://www.facebook.com/groups/1478094899435458', 'img_url': 'https://scontent-mad2-1.xx.fbcdn.net/v/t1.30497-1/116687302_959241714549285_318408173653384421_n.jpg?stp=cp0_dst-jpg_p80x80&_nc_cat=1&ccb=1-7&_nc_sid=b81613&_nc_ohc=2ZA3jlLB-iYAX_gXh1Q&_nc_oc=AQmPss0Bj9qLPTXOEf_xlBU06Lan9G2pSsnktKESv4wmTc1i7Yp8GrR7t96c5AEs_hg&_nc_ht=scontent-mad2-1.xx&oh=00_AfAlpVSjfQIW1VPlGtYTNG2SlvMsMGGHUlrKFr0bF2EQpg&oe=6602DC03', 'title': 'Pruebas alvaro'}, {'index': 2, 'link': 'https://www.facebook.com/groups/867005741560869', 'img_url': 'https://scontent-mad2-1.xx.fbcdn.net/v/t1.30497-1/116687302_959241714549285_318408173653384421_n.jpg?stp=cp0_dst-jpg_p80x80&_nc_cat=1&ccb=1-7&_nc_sid=b81613&_nc_ohc=2ZA3jlLB-iYAX_gXh1Q&_nc_oc=AQmPss0Bj9qLPTXOEf_xlBU06Lan9G2pSsnktKESv4wmTc1i7Yp8GrR7t96c5AEs_hg&_nc_ht=scontent-mad2-1.xx&oh=00_AfAlpVSjfQIW1VPlGtYTNG2SlvMsMGGHUlrKFr0bF2EQpg&oe=6602DC03', 'title': 'pruebas 2'}, {'index': 3, 'link': 'https://www.facebook.com/groups/740970037910764', 'img_url': 'https://scontent-mad2-1.xx.fbcdn.net/v/t1.30497-1/116687302_959241714549285_318408173653384421_n.jpg?stp=cp0_dst-jpg_p80x80&_nc_cat=1&ccb=1-7&_nc_sid=b81613&_nc_ohc=2ZA3jlLB-iYAX_gXh1Q&_nc_oc=AQmPss0Bj9qLPTXOEf_xlBU06Lan9G2pSsnktKESv4wmTc1i7Yp8GrR7t96c5AEs_hg&_nc_ht=scontent-mad2-1.xx&oh=00_AfAlpVSjfQIW1VPlGtYTNG2SlvMsMGGHUlrKFr0bF2EQpg&oe=6602DC03', 'title': 'pruebas 1'}]
-    info_to_user_message = "Por favor, selecciona los grupos donde deseas compartir"
+    # info_to_user_message = "Por favor, selecciona los grupos donde deseas compartir"
     info_to_user_div = f"""
-        let html_seleccion_grupos_div = document.createElement('div');
-        html_seleccion_grupos_div.innerHTML = `
-            <p>{info_to_user_message}</p>
+        let html_seleccion_grupos_cont_1 = document.createElement('div');
+        let html_info_to_user_message_cont_1_1 = document.createElement('p');
+        html_seleccion_grupos_cont_1.appendChild(html_info_to_user_message_cont_1_1);
+        html_seleccion_grupos_cont_1.innerHTML = 'Por favor, selecciona los grupos donde deseas compartir';
+        html_info_to_user_message_cont_1_1.style.cssText = `
+            font-size: 1.2em;
+            padding: 20px; 
+            background-color: yellow; 
+            border-radius: 5px; 
+            z-index: 9999
         `;
 
-    // Loop en el arr de objetos y muestra cada uno con sus valores
-    let arr = {arr_obj_grupos_obtenidos};
+        // Loop en el arr de objetos y muestra cada uno con sus valores
+        let arr = {arr_obj_grupos_obtenidos};
 
-    let arr2 = [];
-    let indicesTrue = [];
-        let linkDivButtonDown = document.createElement('button');
-        linkDivButtonDown.textContent = 'Aceptar';
-        html_seleccion_grupos_div.appendChild(linkDivButtonDown);
-        linkDivButtonDown.style.cssText = `
+        let arr2 = [];
+        let indicesTrue = [];
+        let html_linkDivButtonDown_cont_1_2 = document.createElement('button');
+        html_linkDivButtonDown_cont_1_2.textContent = 'Aceptar';
+        html_seleccion_grupos_cont_1.appendChild(html_linkDivButtonDown_cont_1_2);
+        html_linkDivButtonDown_cont_1_2.style.cssText = `
                 padding: 1em;
                 background-color: #fff;
                 color: #000;
@@ -256,42 +270,58 @@ def js_function():
                 cursor: pointer
             `;
         let ids_ocultos = document.createElement('p');
-        html_seleccion_grupos_div.appendChild(ids_ocultos);
+        html_seleccion_grupos_cont_1.appendChild(ids_ocultos);
         ids_ocultos.id = 'ids_ocultos';
         ids_ocultos.style.cssText = `
             display: none;
         `;
 
         let ids_ocultos_seleccionados = document.createElement('p');
-        html_seleccion_grupos_div.appendChild(ids_ocultos_seleccionados);
+        html_seleccion_grupos_cont_1.appendChild(ids_ocultos_seleccionados);
         ids_ocultos_seleccionados.id = 'ids_ocultos_seleccionados';
         ids_ocultos_seleccionados.style.cssText = `
             display: none;
         `;
         ids_ocultos_seleccionados.innerHTML = 'False';
 
-        for (let i = 0; i < arr.length; i++) {{
-            let linkDiv = document.createElement('div');        
-            linkDiv.innerHTML = '<p>' + arr[i].index + '</p>' + '<img src="' + arr[i].img_url + '"/>' + '<p>' + arr[i].title + '</p>';
-            html_seleccion_grupos_div.appendChild(linkDiv);
+        let html_linkDiv_cont_1_3 = document.createElement('div');
+        html_seleccion_grupos_cont_1.appendChild(html_linkDiv_cont_1_3);
+        html_linkDiv_cont_1_3.style.cssText = `
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            padding: 2em; 
+            background-color: #0c0c0c; 
+            z-index: 9998;
+            overflow-y: scroll
+        `;
 
-            linkDiv.style.cssText = `
+        for (let i = 0; i < arr.length; i++) {{
+            let html_linkDiv_1_3_1 = document.createElement('div');        
+            // html_linkDiv_1_3_1.innerHTML = '<p>' + arr[i].index + '</p>' + '<img src="' + arr[i].img_url + '"/>' + '<p>' + arr[i].title + '</p>';
+            html_linkDiv_1_3_1.innerHTML = '<img src="' + arr[i].img_url + '"/>' + '<p>' + arr[i].title + '</p>';
+            html_linkDiv_cont_1_3.appendChild(html_linkDiv_1_3_1);
+
+            html_linkDiv_1_3_1.style.cssText = `
+                color: #000;
                 width: 100px;
+                height: 200px;
                 padding: 1em;
-                background-color: #0f0;
+                background-color: #0d0;
                 border-radius: 5px;
                 z-index: 9999;
                 border: 1px solid #000;
                 cursor: pointer
             `;
             
-            linkDiv.addEventListener('click', () => {{
+            html_linkDiv_1_3_1.addEventListener('click', () => {{
                 arr2[arr[i].index].seleccionado ? (
                         arr2[arr[i].index].seleccionado = false,
-                        linkDiv.style.backgroundColor = '#f00'
+                        html_linkDiv_1_3_1.style.backgroundColor = '#d00'
                     ) : (
                         arr2[arr[i].index].seleccionado = true,
-                        linkDiv.style.backgroundColor = '#0f0'
+                        html_linkDiv_1_3_1.style.backgroundColor = '#0d0'
                     );
             }});
             arr2.push({{
@@ -299,35 +329,35 @@ def js_function():
                 seleccionado: true
             }});
         }}
-        linkDivButtonDown.addEventListener('click', () => {{
+        html_linkDivButtonDown_cont_1_2.addEventListener('click', () => {{
             ids_ocultos.innerHTML = '';
             arr2.forEach(obj => {{
                 if(obj.seleccionado === true){{
                     ids_ocultos.innerHTML += obj.grupo_index + ', ';
                 }};
             }});
-            html_seleccion_grupos_div.style.cssText = `
+            html_seleccion_grupos_cont_1.style.cssText = `
                 display: none;
             `;
             ids_ocultos_seleccionados.innerHTML = 'True';
         }});
-        html_seleccion_grupos_div.style.cssText = `
-            font-size: 1.2em; 
+        html_seleccion_grupos_cont_1.style.cssText = `
+            color: #fff;
+            font-size: 1.2em;
             position: fixed; 
             top: 0; 
             left: 0;
             width: 100%;
+            height: 100%;
             display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
+            flex-direction: column;
             padding: 2em; 
             background-color: #0c0c0c; 
-            border-radius: 5px; 
-            z-index: 9998;
-            border: 1px solid #000;
-            overflow-y: scroll
+            // border-radius: 5px; 
+            z-index: 9999;
+            // border: 1px solid #000;
         `;
-        document.body.appendChild(html_seleccion_grupos_div);
+        document.body.appendChild(html_seleccion_grupos_cont_1);
     """
     driver.execute_script(info_to_user_div)
 
