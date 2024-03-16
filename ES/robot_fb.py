@@ -72,7 +72,13 @@ def cookies():
     time.sleep(1) #---------------------------------------------------------------------------------------------------------------------------------------------------------
     # detectamos si existe un boton de cookies, y las rechazamos. Si este no existe, seguimos
     # Usar *loc.COOKIES permite desempaquetar la tupla
-    btn_cookies = driver.find_element(*loc.COOKIES)
+    if(driver.find_element(*loc.COOKIES_ES)):
+        btn_cookies = driver.find_element(*loc.COOKIES_ES)
+    if(driver.find_element(*loc.COOKIES_CA)):
+        btn_cookies = driver.find_element(*loc.COOKIES_CA)
+    if(driver.find_element(*loc.COOKIES_EN)):
+        btn_cookies = driver.find_element(*loc.COOKIES_EN)
+
     if btn_cookies:
         print('Rechazando cookies opcionales')
         btn_cookies.click()
@@ -121,7 +127,7 @@ def facebook_login():
             facebook_login()
     except:
         # Localizar el boton de grupos de Facebook. Significa que hemos iniciado sesión con éxito.
-        WebDriverWait(driver, 0).until(EC.presence_of_element_located(loc.GROUPS_BTN))
+        WebDriverWait(driver, 999).until(EC.presence_of_element_located(loc.GROUPS_BTN))
 
 
 ### IR A TUS GRUPOS
@@ -140,36 +146,214 @@ def ir_a_grupos():
 #########################################################################################
 ################################ OBTENER LINKS DE GRUPOS ################################
 
-def obtener_links_grupos():
+def obtener_obj_grupos():
     #########################################################################################
     ############# EN CASO DE NO ENTRAR EN BOTON GRUPOS > TUS GRUPOS: ########################
 
     # Encontrar todos los enlaces de grupos en la url actual, que no tengan el panel principal role"main" como elemento padre (para no obtener links de grupos sugeridos)
-    # all_links = driver.find_elements(By.XPATH, '//a[not(ancestor::div[@role="main"])]')
+    # all_a_tags = driver.find_elements(By.XPATH, '//a[not(ancestor::div[@role="main"])]')
 
     #########################################################################################
     #################### ENTRAR EN BOTON GRUPOS > TUS GRUPOS: ###############################
     driver.get("https://www.facebook.com/groups/joins/?nav_source=tab&ordering=viewer_added")
     WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//div[@role="main"]')))
-    # Buscar todos los links dentro del panel principal --> div con role="main"
-    all_links = driver.find_elements(By.XPATH, '//div[@role="main"]//a')
-    #########################################################################################
 
-    # Declaramos la variable donde definiremos el array de tipo set que usaremos para almacenar todos los links que sean de grupos
-    arr_links_grupos_obtenidos = set([])
+    arr_obj_grupos_obtenidos = []
+    
+    # bajar pagina hasta abajo para cargar todos los grupos 
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    # Esperar un momento para que la página cargue completamente
+    import time
+    time.sleep(3)
+    # bajar página de nuevo por si acaso
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
-    print('Buscando grupos')
-    for i in range(len(all_links)):
-        link = all_links[i]
-        link_regex = re.search(r"https://www.facebook.com/groups/\d+", link.get_attribute("href"))
+    # dentro de --> 
+    panel_central = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.XPATH, '//div[@role="main" and @aria-label="Preview of a group"]')))
+    print('panel central: ')
+    print(panel_central)
+    # de cada padre --> role="listitem": 
+    list_item = panel_central.find_elements(By.XPATH, '//div[@role="listitem"]') # por si sirve, también tiene --> style="max-width: 600px; min-width: 320px;"
+    print('COMP0: list_item length: ')
+    print(len(list_item))
+    array_existe_link = []
+    grupo_index = -1
+    for grupo in list_item:
         try:
-            if link_regex : arr_links_grupos_obtenidos.add(link_regex.group())
-        except Exception as err:
-            print(f'Ha habido un error de tipo "{type(err).__name__}" obteniendo los links de los grupos --> {err}')
-    print(f'{"-"*30}\nEnlaces obtenidos: {len(arr_links_grupos_obtenidos)} enlaces de grupo')
-    print(arr_links_grupos_obtenidos)
-    return arr_links_grupos_obtenidos
+            # el tag --> 
+            a_tag = WebDriverWait(grupo, 0).until(EC.presence_of_element_located((By.TAG_NAME, 'a')))
+            # el link dentro del tag-->
+            link_regex = re.search(r"https://www.facebook.com/groups/\d+", a_tag.get_attribute("href"))
+            link = link_regex.group()
 
+            if link not in array_existe_link:
+                # añadelo para la siguiente comprobación
+                array_existe_link.append(link)
+
+                grupo_index += 1
+                # la img --> 
+                img_tag = WebDriverWait(grupo, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'image')))
+                img_url = img_tag.get_attribute("xlink:href")
+
+                # el titulo --> 
+                title_tag = WebDriverWait(grupo, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'svg')))
+                title = title_tag.get_attribute("aria-label")
+
+                # crea un nuevo obj
+                new_obj = {
+                    'index': 0,
+                    'link': '',
+                    'img_url': '',
+                    'title': ''
+                }
+                # asigna valores al obj
+                new_obj['index'] = grupo_index
+                new_obj['link'] = link
+                new_obj['img_url'] = img_url
+                new_obj['title'] = title
+                arr_obj_grupos_obtenidos.append(new_obj)
+
+                print('arr_obj_grupos_obtenidos-------------------------------------------------------------------------------------')
+                print(len(arr_obj_grupos_obtenidos))
+        except Exception as err:
+            print('a_tag: ')
+            print(err)
+        print('link existe')
+    return arr_obj_grupos_obtenidos
+
+def js_function():
+    # Elegir grupos donde publicar (internamente: agregar o quitar links de los grupos del array --> arr_links_grupos_obtenidos y agregarlos al arr final de links --> arr_links_grupos_seleccionados)
+    # arr_obj_prueba = ['https://www.facebook.com/groups/740970037910764', 'https://www.facebook.com/groups/867005741560869']
+    # arr_obj_grupos_obtenidos_ej = [{'index': 0, 'link': 'https://www.facebook.com/groups/1113068039716987', 'img_url': 'https://scontent-mad1-1.xx.fbcdn.net/v/t39.30808-6/429679221_2579686565547152_5684308905641758804_n.jpg?stp=cp0_dst-jpg_s110x80&_nc_cat=103&ccb=1-7&_nc_sid=aae68a&_nc_ohc=mgnzalFHSQkAX9lcfZY&_nc_ht=scontent-mad1-1.xx&oh=00_AfDGcA6adJsCdZYMLOWO1fj5DIH7wZhnJA0_6woVj8y7nw&oe=65E94F31', 'title': 'pruebas alvaro 2'}, {'index': 1, 'link': 'https://www.facebook.com/groups/1478094899435458', 'img_url': 'https://scontent-mad2-1.xx.fbcdn.net/v/t1.30497-1/116687302_959241714549285_318408173653384421_n.jpg?stp=cp0_dst-jpg_p80x80&_nc_cat=1&ccb=1-7&_nc_sid=b81613&_nc_ohc=2ZA3jlLB-iYAX_gXh1Q&_nc_oc=AQmPss0Bj9qLPTXOEf_xlBU06Lan9G2pSsnktKESv4wmTc1i7Yp8GrR7t96c5AEs_hg&_nc_ht=scontent-mad2-1.xx&oh=00_AfAlpVSjfQIW1VPlGtYTNG2SlvMsMGGHUlrKFr0bF2EQpg&oe=6602DC03', 'title': 'Pruebas alvaro'}, {'index': 2, 'link': 'https://www.facebook.com/groups/867005741560869', 'img_url': 'https://scontent-mad2-1.xx.fbcdn.net/v/t1.30497-1/116687302_959241714549285_318408173653384421_n.jpg?stp=cp0_dst-jpg_p80x80&_nc_cat=1&ccb=1-7&_nc_sid=b81613&_nc_ohc=2ZA3jlLB-iYAX_gXh1Q&_nc_oc=AQmPss0Bj9qLPTXOEf_xlBU06Lan9G2pSsnktKESv4wmTc1i7Yp8GrR7t96c5AEs_hg&_nc_ht=scontent-mad2-1.xx&oh=00_AfAlpVSjfQIW1VPlGtYTNG2SlvMsMGGHUlrKFr0bF2EQpg&oe=6602DC03', 'title': 'pruebas 2'}, {'index': 3, 'link': 'https://www.facebook.com/groups/740970037910764', 'img_url': 'https://scontent-mad2-1.xx.fbcdn.net/v/t1.30497-1/116687302_959241714549285_318408173653384421_n.jpg?stp=cp0_dst-jpg_p80x80&_nc_cat=1&ccb=1-7&_nc_sid=b81613&_nc_ohc=2ZA3jlLB-iYAX_gXh1Q&_nc_oc=AQmPss0Bj9qLPTXOEf_xlBU06Lan9G2pSsnktKESv4wmTc1i7Yp8GrR7t96c5AEs_hg&_nc_ht=scontent-mad2-1.xx&oh=00_AfAlpVSjfQIW1VPlGtYTNG2SlvMsMGGHUlrKFr0bF2EQpg&oe=6602DC03', 'title': 'pruebas 1'}]
+    info_to_user_message = "Por favor, selecciona los grupos donde deseas compartir"
+    info_to_user_div = f"""
+        let html_seleccion_grupos_div = document.createElement('div');
+        html_seleccion_grupos_div.innerHTML = `
+            <p>{info_to_user_message}</p>
+        `;
+
+    // Loop en el arr de objetos y muestra cada uno con sus valores
+    let arr = {arr_obj_grupos_obtenidos};
+
+    let arr2 = [];
+    let indicesTrue = [];
+        let linkDivButtonDown = document.createElement('button');
+        linkDivButtonDown.textContent = 'Aceptar';
+        html_seleccion_grupos_div.appendChild(linkDivButtonDown);
+        linkDivButtonDown.style.cssText = `
+                padding: 1em;
+                background-color: #fff;
+                color: #000;
+                border-radius: 5px;
+                z-index: 9999;
+                border: 1px solid #000;
+                width: 100px;
+                height: 60px;
+                cursor: pointer
+            `;
+        let ids_ocultos = document.createElement('p');
+        html_seleccion_grupos_div.appendChild(ids_ocultos);
+        ids_ocultos.id = 'ids_ocultos';
+        ids_ocultos.style.cssText = `
+            display: none;
+        `;
+
+        let ids_ocultos_seleccionados = document.createElement('p');
+        html_seleccion_grupos_div.appendChild(ids_ocultos_seleccionados);
+        ids_ocultos_seleccionados.id = 'ids_ocultos_seleccionados';
+        ids_ocultos_seleccionados.style.cssText = `
+            display: none;
+        `;
+        ids_ocultos_seleccionados.innerHTML = 'False';
+
+        for (let i = 0; i < arr.length; i++) {{
+            let linkDiv = document.createElement('div');        
+            linkDiv.innerHTML = '<p>' + arr[i].index + '</p>' + '<img src="' + arr[i].img_url + '"/>' + '<p>' + arr[i].title + '</p>';
+            html_seleccion_grupos_div.appendChild(linkDiv);
+
+            linkDiv.style.cssText = `
+                width: 100px;
+                padding: 1em;
+                background-color: #0f0;
+                border-radius: 5px;
+                z-index: 9999;
+                border: 1px solid #000;
+                cursor: pointer
+            `;
+            
+            linkDiv.addEventListener('click', () => {{
+                arr2[arr[i].index].seleccionado ? (
+                        arr2[arr[i].index].seleccionado = false,
+                        linkDiv.style.backgroundColor = '#f00'
+                    ) : (
+                        arr2[arr[i].index].seleccionado = true,
+                        linkDiv.style.backgroundColor = '#0f0'
+                    );
+            }});
+            arr2.push({{
+                grupo_index: i,
+                seleccionado: true
+            }});
+        }}
+        linkDivButtonDown.addEventListener('click', () => {{
+            ids_ocultos.innerHTML = '';
+            arr2.forEach(obj => {{
+                if(obj.seleccionado === true){{
+                    ids_ocultos.innerHTML += obj.grupo_index + ', ';
+                }};
+            }});
+            html_seleccion_grupos_div.style.cssText = `
+                display: none;
+            `;
+            ids_ocultos_seleccionados.innerHTML = 'True';
+        }});
+        html_seleccion_grupos_div.style.cssText = `
+            font-size: 1.2em; 
+            position: fixed; 
+            top: 0; 
+            left: 0;
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            padding: 2em; 
+            background-color: #0c0c0c; 
+            border-radius: 5px; 
+            z-index: 9998;
+            border: 1px solid #000;
+            overflow-y: scroll
+        `;
+        document.body.appendChild(html_seleccion_grupos_div);
+    """
+    driver.execute_script(info_to_user_div)
+
+def esperar_hasta_cliente_selecciona_grupos():
+    div_ids_oc_sel = driver.find_element(By.ID, "ids_ocultos_seleccionados")
+    while div_ids_oc_sel.get_attribute("innerHTML") != 'True':
+        time.sleep(1)
+        print('Esperando a aceptar la selección de grupos donde compartir...')
+
+def finds_links_with_ids_ocultos_arr():
+    ids_ocultos = driver.find_element(By.ID, "ids_ocultos")
+    ids_ocultos_innerHTML = ids_ocultos.get_attribute("innerHTML")
+    arr_indices_ocultos_seleccionados = ids_ocultos_innerHTML.split(',')
+    arr_final_links = []
+
+    for indice_oculto in arr_indices_ocultos_seleccionados:
+        try:
+            # Convertimos el índice a entero para usarlo como índice en arr_obj_grupos_obtenidos
+            indice_oculto = int(indice_oculto.strip())
+            if arr_obj_grupos_obtenidos[indice_oculto]['link']:
+                arr_final_links.append(arr_obj_grupos_obtenidos[indice_oculto]['link'])
+        except Exception as err:
+            print(f"Error al obtener el enlace del grupo con índice {indice_oculto}: {err}")
+
+    print(arr_final_links)
+    return arr_final_links
 ################################ OBTENER LINKS DE GRUPOS ################################
 #########################################################################################
 
@@ -182,7 +366,6 @@ actual_min = time.localtime().tm_min
 actual_sec = time.localtime().tm_sec
 
 # Porcentaje de completado del script entero. Regla de tres calculando todos los links como el 100%.
-# arr_links_grupos_obtenidos = obtener_links_grupos()
 porcentaje_completado = 0
 def informe_porcenataje_completado():
     porcentaje_unico_link = (1 * 100) / len(arr_links_grupos_obtenidos)
@@ -197,7 +380,21 @@ def informe_porcenataje_completado():
 def crear_post():
     # Avisar al usuario de escribir el post por consola
     info_to_user_message = "Por favor, escribe el post en la consola/terminal abierta del principio"
-    info_to_user_div = f"var mensaje = document.createElement('div'); mensaje.textContent = '{info_to_user_message}'; mensaje.style.cssText = 'font-size: 1.2em; position: fixed; top: 15px; left: 15px; padding: 20px; background-color: yellow; border-radius: 5px; z-index: 9999'; document.body.appendChild(mensaje);"
+    info_to_user_div = f"""
+        var mensaje = document.createElement('div'); 
+        mensaje.textContent = '{info_to_user_message}'; 
+        mensaje.style.cssText = `
+            font-size: 1.2em; 
+            position: fixed; 
+            top: 15px; 
+            left: 15px; 
+            padding: 40px; 
+            background-color: yellow; 
+            border-radius: 5px; 
+            z-index: 9999
+        `; 
+        document.body.appendChild(mensaje);
+    """
     driver.execute_script(info_to_user_div)
 
     print("Escribe aquí tu post línea por línea (presiona Enter dos veces para terminar):\n")
@@ -296,14 +493,14 @@ def mensage_final_cerrar_bot():
     print('Contenido publicado en todos los grupos')
 
     print(f'Cerrando en 10 segundos.\n{"-"*30}\nAlvaro624la te agradece haber utilizado su herramienta y espera que te haya sido útil ;D')
-    print("                       _            ")
-    print("                      (_)           ")
-    print("   __ _ _ __ __ _  ___ _  __ _ ___  ")
-    print("  / _` | '__/ _` |/ __| |/ _` / __| ")
-    print(" | (_| | | | (_| | (__| | (_| \__ \ ")
-    print("  \__, |_|  \__,_|\___|_|\__,_|___/ ")
-    print("   __/ |                            ")
-    print("  |___/   ")
+    print(r"                       _            ")
+    print(r"                      (_)           ")
+    print(r"   __ _ _ __ __ _  ___ _  __ _ ___  ")
+    print(r"  / _` | '__/ _` |/ __| |/ _` / __| ")
+    print(r" | (_| | | | (_| | (__| | (_| \__ \ ")
+    print(r"  \__, |_|  \__,_|\___|_|\__,_|___/ ")
+    print(r"   __/ |                            ")
+    print(r"  |___/   ")
     time.sleep(7)
     print('Cerrando en 3 segundos')
     time.sleep(1)
@@ -313,12 +510,15 @@ def mensage_final_cerrar_bot():
     time.sleep(1)
     driver.close()
 
+
 ############################################################################
 ################################# FUNCIONES ################################
 ############################################################################
+# CONFIG
 open_url_after_driver_config()
 verify_page_title()
 cookies()
+# INICIO SESIÓN
 ###################### Iniciar sesión automáticamente ######################
 # Para iniciar sesión automáticamente, puedes añadir tus datos entre comillas (simples o dobles) así: 
 ##### ...ask_user_email('aquí_tu_email')
@@ -328,8 +528,15 @@ user_email = ask_user_email()
 user_password = ask_user_password()
 ############################################################################
 facebook_login()
+# SELECCIÓN GRUPOS 
 ir_a_grupos()
-arr_links_grupos_obtenidos = obtener_links_grupos()
+arr_obj_grupos_obtenidos = obtener_obj_grupos()
+js_function()
+esperar_hasta_cliente_selecciona_grupos()
+# CREAR POST
 contenido_publicacion = crear_post()
+# PUBLICAR
+arr_links_grupos_obtenidos = finds_links_with_ids_ocultos_arr()
 publicar_en_cada_grupo()
+# AGRADECIMIENTOS Y CERRAR
 mensage_final_cerrar_bot()
