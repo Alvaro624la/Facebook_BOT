@@ -5,6 +5,9 @@ This bot **post automatically** for you in every each of your Facebook groups, a
 
 You can download it here: [DOWNLOAD APP HERE](https://drive.google.com/drive/folders/1TLD9rNhmRasQQvKDkr3XrRPsBRyoBVUq?usp=sharing)
 
+> [!TIP]
+> You have to extract it to let the BOT work correctly
+
 This script can run in the background or in parallel. That's the difference between Selenium and Pyautogui, which was the first thing I used on my first Bot project.
 
 For the moment, only can be used to text, links, etc. posts, no for multimedia stuff.

@@ -234,6 +234,7 @@ class PopUpsClass():
             html_linkDivButtonDown_cont_1_2.style.cssText = `
                 padding: 1em;
                 background-color: #fff;
+                font-size: 1.2em;
                 color: #000;
                 border-radius: 5px;
                 z-index: 9998;
@@ -305,8 +306,8 @@ class PopUpsClass():
             html_linkDivButtonDown_cont_1_2.addEventListener('mouseenter', () => {{
                 html_linkDivButtonDown_cont_1_2.style.cssText = `
                     padding: 1em;
+                    font-size: 1.2em;
                     background-color: #aaa;
-                    padding: 1em;
                     color: #000;
                     border-radius: 5px;
                     z-index: 9998;
@@ -320,8 +321,8 @@ class PopUpsClass():
             html_linkDivButtonDown_cont_1_2.addEventListener('mouseleave', () => {{
                 html_linkDivButtonDown_cont_1_2.style.cssText = `
                     padding: 1em;
+                    font-size: 1.2em;
                     background-color: #fff;
-                    padding: 1em;
                     color: #000;
                     border-radius: 5px;
                     z-index: 9998;
@@ -336,8 +337,8 @@ class PopUpsClass():
                 html_linkDivButtonDown_cont_1_2.style.cssText = `
                     transform: scale(0.95);
                     padding: 1em;
+                    font-size: 1.2em;
                     background-color: #fff;
-                    padding: 1em;
                     color: #000;
                     border-radius: 5px;
                     z-index: 9998;
@@ -352,8 +353,8 @@ class PopUpsClass():
                 html_linkDivButtonDown_cont_1_2.style.cssText = `
                     transform: scale(1);
                     padding: 1em;
+                    font-size: 1.2em;
                     background-color: #fff;
-                    padding: 1em;
                     color: #000;
                     border-radius: 5px;
                     z-index: 9998;
@@ -390,4 +391,151 @@ class PopUpsClass():
                 z-index: 9998;
             `;
             document.body.appendChild(html_seleccion_grupos_cont_1);
+        """
+    def CREATE_POST(info_to_user_message):
+        return f"""
+            let html_create_post_cont_1 = document.createElement('div');
+            html_create_post_cont_1.style.cssText = `
+                color: #fff;
+                position: fixed; 
+                top: 0; 
+                left: 0;
+                width: 100%;
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+                padding: 90px 0 0 2em; 
+                background-color: #0c0c0c;
+                z-index: 9998;
+                overflow-y: auto
+            `;
+            document.body.appendChild(html_create_post_cont_1);
+
+            let post_creado = document.createElement('p');
+            post_creado.id = 'post_creado';
+            post_creado.innerHTML = 'False';
+            post_creado.style.cssText = `
+                display: none;
+            `;
+            html_create_post_cont_1.appendChild(post_creado);
+
+            let html_create_post_mensaje_cont_1_1 = document.createElement('p');
+            html_create_post_mensaje_cont_1_1.textContent = '{info_to_user_message}';
+            html_create_post_mensaje_cont_1_1.style.cssText = `
+                color: #fff;
+                font-size: 1.2em;
+                padding: 0 1em;
+                z-index: 9998;
+                overflow-y: scroll;
+            `; 
+            html_create_post_cont_1.appendChild(html_create_post_mensaje_cont_1_1);
+
+            let html_create_post_input_cont_1_2 = document.createElement('textarea');
+            html_create_post_input_cont_1_2.id = 'create_post_input';
+            html_create_post_input_cont_1_2.style.cssText = `
+                color: #000;
+                font-size: 1.2em;
+                padding: 2em;
+                background-color: #fff; 
+                border-radius: 5px; 
+                z-index: 9998;
+                border: 2px solid #fff;
+                border-radius: 5px;
+                width: 90%;
+                min-height: 300px;
+                max-height: 500px;
+                spellcheck: true;
+                resize: vertical
+            `; 
+            html_create_post_cont_1.appendChild(html_create_post_input_cont_1_2);
+
+            let html_create_post_button_cont_1_3 = document.createElement('button');
+            html_create_post_button_cont_1_3.textContent = 'Publicar';
+            html_create_post_button_cont_1_3.style.cssText = `
+                background-color: #22478e;
+                padding: 1em;
+                margin-top: 1em;
+                color: #fff;
+                border-radius: 5px;
+                z-index: 9998;
+                border: 3px solid #0b177b;
+                font-size: 1.2em;
+                width: 100px;
+                height: 60px;
+                cursor: pointer
+            `;
+            html_create_post_cont_1.appendChild(html_create_post_button_cont_1_3);
+
+            html_create_post_button_cont_1_3.addEventListener('mouseenter', () => {{
+                html_create_post_button_cont_1_3.style.cssText = `
+                    background-color: #0b177b;
+                    padding: 1em;
+                    margin-top: 1em;
+                    color: #fff;
+                    border-radius: 5px;
+                    z-index: 9998;
+                    border: 3px solid #0b177b;
+                    font-size: 1.2em;
+                    width: 100px;
+                    height: 60px;
+                    cursor: pointer
+                `;
+            }});
+
+            html_create_post_button_cont_1_3.addEventListener('mouseleave', () => {{
+                html_create_post_button_cont_1_3.style.cssText = `
+                    background-color: #22478e;
+                    padding: 1em;
+                    margin-top: 1em;
+                    color: #fff;
+                    border-radius: 5px;
+                    z-index: 9998;
+                    border: 3px solid #0b177b;
+                    font-size: 1.2em;
+                    width: 100px;
+                    height: 60px;
+                    cursor: pointer
+                `;
+            }});
+
+            html_create_post_button_cont_1_3.addEventListener('mousedown', () => {{
+                html_create_post_button_cont_1_3.style.cssText = `
+                    transform: scale(0.95);
+                    background-color: #0b177b;
+                    padding: 1em;
+                    margin-top: 1em;
+                    color: #fff;
+                    border-radius: 5px;
+                    z-index: 9998;
+                    border: 3px solid #0b177b;
+                    font-size: 1.2em;
+                    width: 100px;
+                    height: 60px;
+                    cursor: pointer
+                `;
+            }});
+
+            html_create_post_button_cont_1_3.addEventListener('mouseup', () => {{
+                html_create_post_button_cont_1_3.style.cssText = `
+                    transform: scale(1);
+                    background-color: #0b177b;
+                    padding: 1em;
+                    margin-top: 1em;
+                    color: #fff;
+                    border-radius: 5px;
+                    z-index: 9998;
+                    border: 3px solid #0b177b;
+                    font-size: 1.2em;
+                    width: 100px;
+                    height: 60px;
+                    cursor: pointer
+                `;
+            }});
+
+            html_create_post_button_cont_1_3.addEventListener('click', () => {{
+                html_create_post_cont_1.style.cssText = `
+                    display: none;
+                `;
+                post_creado.innerHTML = 'True';
+            }});
         """
