@@ -14,38 +14,62 @@ from webdriver_manager.chrome import ChromeDriverManager
 
 # MODULOS PROPIOS
 from locators import LocatorsClass as loc
+from pop_ups import PopUpsClass as pop_up
 
 
 ### CREDENCIALES:
-def ask_user_email(user_email=None):
-    try:
-        # Si el usuario ha introducido el user_email, devuelvelo. Si no, preguntale.
-        if user_email:
-            return user_email
-        else:
-            user_email = input('Introduce tu email de Facebook: ')
-            ask_if_secure_email = input('¿Estas seguro de que está correctamente escrito? (s/n): ')
-            if ask_if_secure_email.lower() not in ['y', 'yes', 's', 'si']:
-                ask_user_email()
-            else:
-                return user_email
-    except Exception as err:
-        print(f'Error de tipo "{type(err).__name__}" al intentar obtener el email y contraseña de Facebook del usuario mediante preguntas --> {err}')
+# def ask_user_email(user_email=None):
+#     try:
+#         # Si el usuario ha introducido el user_email, devuelvelo. Si no, preguntale.
+#         if user_email:
+#             return user_email
+#         else:
+#             user_email = input('Introduce tu email de Facebook: ')
+#             ask_if_secure_email = input('¿Estas seguro de que está correctamente escrito? (s/n): ')
+#             if ask_if_secure_email.lower() not in ['y', 'yes', 's', 'si']:
+#                 ask_user_email()
+#             else:
+#                 return user_email
+#     except Exception as err:
+#         print(f'Error de tipo "{type(err).__name__}" al intentar obtener el email de Facebook del usuario mediante preguntas --> {err}')
 
-def ask_user_password(user_password=None):
+# def ask_user_password(user_password=None):
+#     try:
+#         # Si el usuario ha introducido el user_password, devuelvelo. Si no, preguntale.
+#         if user_password:
+#             return user_password
+#         else:
+#             user_password = input('Ahora introduce tu contraseña de Facebook: ')
+#             ask_if_secure_pass = input('¿La contraseña también está correctamente escrita? (s/n): ')
+#             if ask_if_secure_pass.lower() not in ['y', 'yes', 's', 'si']:
+#                 ask_user_password()
+#             else:
+#                 return user_password
+#     except Exception as err:
+#         print(f'Error de tipo "{type(err).__name__}" al intentar obtener la contraseña de Facebook del usuario mediante preguntas --> {err}')
+
+def ask_credentials(user_email=None, user_password=None):
     try:
-        # Si el usuario ha introducido el user_password, devuelvelo. Si no, preguntale.
-        if user_password:
-            return user_password
+        if user_email and user_password:
+            return user_email, user_password
         else:
-            user_password = input('Ahora introduce tu contraseña de Facebook: ')
-            ask_if_secure_pass = input('¿La contraseña también está correctamente escrita? (s/n): ')
-            if ask_if_secure_pass.lower() not in ['y', 'yes', 's', 'si']:
-                ask_user_password()
-            else:
-                return user_password
+            # Ventana emergente para que el cliente introduzca los credenciales
+            info_to_user_message = "Por favor, introduzca los credenciales para que el BOT pueda operar y ver sus grupos"
+            info_to_user_div = pop_up.CREDENTIALS(info_to_user_message)
+            driver.execute_script(info_to_user_div)
+
+            html_oculto_credenciales_introducidos = driver.find_element(By.ID, "credenciales_introducidos")
+            while html_oculto_credenciales_introducidos.get_attribute("innerHTML") != 'True':
+                time.sleep(1)
+                print('Esperando para obtener las credenciales...')
+
+            html_input_user_email = driver.find_element(By.ID, "credentials_name_input")
+            html_input_user_password = driver.find_element(By.ID, "credentials_password_input")
+            user_email = html_input_user_email.get_attribute("value")
+            user_password = html_input_user_password.get_attribute("value")
+            return user_email, user_password
     except Exception as err:
-        print(f'Error de tipo "{type(err).__name__}" al intentar obtener el email y contraseña de Facebook del usuario mediante preguntas --> {err}')
+        print(f'Error de tipo "{type(err).__name__}" al intentar obtener el email y la contraseña de Facebook del usuario mediante preguntas --> {err}')
 
 
 ### DRIVER CONFIG:
@@ -55,7 +79,7 @@ chrome_options.add_argument("--disable-notifications")
 # se crea una instancia del webdrive chrome
 # driver_path = './chromedriver-win64/chromedriver.exe'
 # driver = webdriver.Chrome(service=Service(driver_path), options=chrome_options)
-driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
 
 def open_url_after_driver_config():
     # abrimos la url y se espera a que esté completamente cargada con el metodo get de driver
@@ -64,6 +88,8 @@ def open_url_after_driver_config():
 ### VERIFICACION TITULO PAGINA:
 def verify_page_title():
     try:
+        # tiempo manual preventivo para que no lance el error assert cuando aún no ha cargado la página ni el title
+        time.sleep(1)
         # verificamos si el titulo de la página del driver es Facebook. Si no es, lanza error.
         assert "Facebook" in driver.title
     except AssertionError as err:
@@ -73,21 +99,19 @@ def verify_page_title():
 
 ### COOKIES:
 def cookies():
-    # Apaño temporal para que cargue bien la ventana de cookies y no ejecute el btn_cookies antes de tiempo causando un error ----------------------------------------------
-    time.sleep(1) #---------------------------------------------------------------------------------------------------------------------------------------------------------
     # detectamos si existe un boton de cookies, y las rechazamos. Si este no existe, seguimos
     # Usar *loc.COOKIES permite desempaquetar la tupla
-    if(driver.find_element(*loc.COOKIES_ES)):
-        btn_cookies = driver.find_element(*loc.COOKIES_ES)
+    # if(driver.find_element(*loc.COOKIES_ES)):
+    #     btn_cookies = driver.find_element(*loc.COOKIES_ES)
     # if(driver.find_element(*loc.COOKIES_CA)):
     #     btn_cookies = driver.find_element(*loc.COOKIES_CA)
     # if(driver.find_element(*loc.COOKIES_EN)):
     #     btn_cookies = driver.find_element(*loc.COOKIES_EN)
-
-    if btn_cookies:
-        print('Rechazando cookies opcionales')
+    try:
+        btn_cookies = WebDriverWait(driver, 1).until(EC.presence_of_element_located((loc.COOKIES_ES)))
         btn_cookies.click()
-    else:
+        print('Rechazando cookies opcionales')
+    except Exception:
         print('Configuración de cookies ya definida. Continuando...')
 
 ### INICIAR SESION
@@ -114,26 +138,64 @@ def facebook_login():
         print('Iniciando sesión...')
 
     # Comprobación del correcto iniciado sesión (usando try except de manera inversa)
-    try:            
-        try:
+    # try:            
+        # try:
             # Localizamos y clicamos en btn: ¿Has olvidado la contraseña?
-            btn_olvidado_contraseña = WebDriverWait(driver, 5).until(EC.presence_of_element_located(loc.LOGIN_FORGOTTEN_PASS_LINK))
-            btn_olvidado_contraseña.click()
-            ask_user_password()
-            driver.find_element(By.ID, "pass").clear()
-            driver.find_element(By.ID, "pass").send_keys(user_password)
-            driver.find_element(By.XPATH, "//button[@name='login']").click()
-        except:
-            # Detectar algún mensaje de error en el inicio de sesión
-            WebDriverWait(driver, 0).until(EC.presence_of_element_located(loc.LOGIN_ERR_MSG))
-            print('Error al iniciar sesión. Introduzca los credenciales de nuevo.')
-            ask_user_email()
-            ask_user_password()
-            facebook_login()
-    except:
-        # Localizar el boton de grupos de Facebook. Significa que hemos iniciado sesión con éxito.
-        WebDriverWait(driver, 999).until(EC.presence_of_element_located(loc.GROUPS_BTN))
-        # pongo 999 de espera por si la cuenta tiene verificacion en dos pasos con el movil para dar tiempo a completarla y entrar en facebook, y seguir el proceso
+            # btn_olvidado_contraseña = WebDriverWait(driver, 5).until(EC.presence_of_element_located(loc.LOGIN_FORGOTTEN_PASS_LINK))
+            # btn_olvidado_contraseña.click()
+            # ask_user_password()
+            # driver.find_element(By.ID, "pass").clear()
+            # driver.find_element(By.ID, "pass").send_keys(user_password)
+            # driver.find_element(By.XPATH, "//button[@name='login']").click()
+        # except:
+        # Detectar algún mensaje de error en el inicio de sesión
+        
+        # try:
+        #     WebDriverWait(driver, 0).until(EC.presence_of_element_located(loc.LOGIN_ERR_MSG_1))
+            
+        #     # html_input_user_email = driver.find_element(By.ID, "credentials_name_input")
+        #     # html_input_user_password = driver.find_element(By.ID, "credentials_password_input")
+        #     # html_input_user_email.clear()
+        #     # html_input_user_password.clear()
+        #     # driver.execute_script("arguments[0].value = ''", html_input_user_email)
+        #     # driver.execute_script("arguments[0].value = ''", html_input_user_password)
+        #     driver.execute_script('document.getElementById("credentials_name_input").value = "";')
+        #     driver.execute_script('document.getElementById("credentials_password_input").value = "";')
+            
+        #     info_to_user_message = "Error al iniciar sesión. Introduzca correctamente los credenciales de nuevo."
+        #     info_to_user_div = pop_up.QUICK_MESSAGE(info_to_user_message)
+        #     driver.execute_script(info_to_user_div)
+
+        #     driver.get("https://www.facebook.com/")
+        #     ask_credentials()
+        #     facebook_login()
+        # except:
+        #     WebDriverWait(driver, 0).until(EC.presence_of_element_located(loc.LOGIN_ERR_MSG_2))
+
+        #     # html_input_user_email = driver.find_element(By.ID, "credentials_name_input")
+        #     # html_input_user_password = driver.find_element(By.ID, "credentials_password_input")
+        #     # html_input_user_email.clear()
+        #     # html_input_user_password.clear()
+        #     # driver.execute_script("arguments[0].value = ''", html_input_user_email)
+        #     # driver.execute_script("arguments[0].value = ''", html_input_user_password)
+        #     driver.execute_script('document.getElementById("credentials_name_input").value = "";')
+        #     driver.execute_script('document.getElementById("credentials_password_input").value = "";')
+            
+        #     info_to_user_message = "Error al iniciar sesión. Introduzca correctamente los credenciales de nuevo."
+        #     info_to_user_div = pop_up.QUICK_MESSAGE(info_to_user_message)
+        #     driver.execute_script(info_to_user_div)
+
+        #     driver.get("https://www.facebook.com/")
+        #     ask_credentials()
+        #     facebook_login()
+    # except:
+    # Localizar el boton de grupos de Facebook. Significa que hemos iniciado sesión con éxito.
+    # info_to_user_message = "Siga los pasos para iniciar sesión por completo"
+    info_to_user_message = "Error al iniciar sesión. Siga los pasos que Facebook le marca, para iniciar sesión por completo"
+    info_to_user_div = pop_up.QUICK_MESSAGE(info_to_user_message)
+    driver.execute_script(info_to_user_div)
+    # pongo 999 de espera por si la cuenta tiene verificacion en dos pasos con el movil para dar tiempo a completarla y entrar en facebook, y seguir el proceso
+    WebDriverWait(driver, 999).until(EC.presence_of_element_located(loc.GROUPS_BTN))
 
 
 ### IR A TUS GRUPOS
@@ -171,10 +233,6 @@ def obtener_obj_grupos():
     # Esperar un momento para que la página cargue completamente
     time.sleep(3)
     # bajar página de nuevo por si acaso
-    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-    time.sleep(1)
-    driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-    time.sleep(1)
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
     time.sleep(1)
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -241,129 +299,8 @@ def js_function():
     # Elegir grupos donde publicar (internamente: agregar o quitar links de los grupos del array --> arr_links_grupos_obtenidos y agregarlos al arr final de links --> arr_links_grupos_seleccionados)
     # arr_obj_prueba = ['https://www.facebook.com/groups/740970037910764', 'https://www.facebook.com/groups/867005741560869']
     # arr_obj_grupos_obtenidos_ej = [{'index': 0, 'link': 'https://www.facebook.com/groups/1113068039716987', 'img_url': 'https://scontent-mad1-1.xx.fbcdn.net/v/t39.30808-6/429679221_2579686565547152_5684308905641758804_n.jpg?stp=cp0_dst-jpg_s110x80&_nc_cat=103&ccb=1-7&_nc_sid=aae68a&_nc_ohc=mgnzalFHSQkAX9lcfZY&_nc_ht=scontent-mad1-1.xx&oh=00_AfDGcA6adJsCdZYMLOWO1fj5DIH7wZhnJA0_6woVj8y7nw&oe=65E94F31', 'title': 'pruebas alvaro 2'}, {'index': 1, 'link': 'https://www.facebook.com/groups/1478094899435458', 'img_url': 'https://scontent-mad2-1.xx.fbcdn.net/v/t1.30497-1/116687302_959241714549285_318408173653384421_n.jpg?stp=cp0_dst-jpg_p80x80&_nc_cat=1&ccb=1-7&_nc_sid=b81613&_nc_ohc=2ZA3jlLB-iYAX_gXh1Q&_nc_oc=AQmPss0Bj9qLPTXOEf_xlBU06Lan9G2pSsnktKESv4wmTc1i7Yp8GrR7t96c5AEs_hg&_nc_ht=scontent-mad2-1.xx&oh=00_AfAlpVSjfQIW1VPlGtYTNG2SlvMsMGGHUlrKFr0bF2EQpg&oe=6602DC03', 'title': 'Pruebas alvaro'}, {'index': 2, 'link': 'https://www.facebook.com/groups/867005741560869', 'img_url': 'https://scontent-mad2-1.xx.fbcdn.net/v/t1.30497-1/116687302_959241714549285_318408173653384421_n.jpg?stp=cp0_dst-jpg_p80x80&_nc_cat=1&ccb=1-7&_nc_sid=b81613&_nc_ohc=2ZA3jlLB-iYAX_gXh1Q&_nc_oc=AQmPss0Bj9qLPTXOEf_xlBU06Lan9G2pSsnktKESv4wmTc1i7Yp8GrR7t96c5AEs_hg&_nc_ht=scontent-mad2-1.xx&oh=00_AfAlpVSjfQIW1VPlGtYTNG2SlvMsMGGHUlrKFr0bF2EQpg&oe=6602DC03', 'title': 'pruebas 2'}, {'index': 3, 'link': 'https://www.facebook.com/groups/740970037910764', 'img_url': 'https://scontent-mad2-1.xx.fbcdn.net/v/t1.30497-1/116687302_959241714549285_318408173653384421_n.jpg?stp=cp0_dst-jpg_p80x80&_nc_cat=1&ccb=1-7&_nc_sid=b81613&_nc_ohc=2ZA3jlLB-iYAX_gXh1Q&_nc_oc=AQmPss0Bj9qLPTXOEf_xlBU06Lan9G2pSsnktKESv4wmTc1i7Yp8GrR7t96c5AEs_hg&_nc_ht=scontent-mad2-1.xx&oh=00_AfAlpVSjfQIW1VPlGtYTNG2SlvMsMGGHUlrKFr0bF2EQpg&oe=6602DC03', 'title': 'pruebas 1'}]
-    # info_to_user_message = "Por favor, selecciona los grupos donde deseas compartir"
-    info_to_user_div = f"""
-        let html_seleccion_grupos_cont_1 = document.createElement('div');
-        let html_info_to_user_message_cont_1_1 = document.createElement('p');
-        html_seleccion_grupos_cont_1.appendChild(html_info_to_user_message_cont_1_1);
-        html_seleccion_grupos_cont_1.innerHTML = 'Por favor, selecciona los grupos donde deseas compartir';
-        html_info_to_user_message_cont_1_1.style.cssText = `
-            font-size: 1.2em;
-            padding: 20px; 
-            background-color: yellow; 
-            border-radius: 5px; 
-            z-index: 9999
-        `;
-
-        // Loop en el arr de objetos y muestra cada uno con sus valores
-        let arr = {arr_obj_grupos_obtenidos};
-
-        let arr2 = [];
-        let indicesTrue = [];
-        let html_linkDivButtonDown_cont_1_2 = document.createElement('button');
-        html_linkDivButtonDown_cont_1_2.textContent = 'Aceptar';
-        html_seleccion_grupos_cont_1.appendChild(html_linkDivButtonDown_cont_1_2);
-        html_linkDivButtonDown_cont_1_2.style.cssText = `
-                padding: 1em;
-                background-color: #fff;
-                color: #000;
-                border-radius: 5px;
-                z-index: 9999;
-                border: 1px solid #000;
-                width: 100px;
-                height: 60px;
-                cursor: pointer
-            `;
-        let ids_ocultos = document.createElement('p');
-        html_seleccion_grupos_cont_1.appendChild(ids_ocultos);
-        ids_ocultos.id = 'ids_ocultos';
-        ids_ocultos.style.cssText = `
-            display: none;
-        `;
-
-        let ids_ocultos_seleccionados = document.createElement('p');
-        html_seleccion_grupos_cont_1.appendChild(ids_ocultos_seleccionados);
-        ids_ocultos_seleccionados.id = 'ids_ocultos_seleccionados';
-        ids_ocultos_seleccionados.style.cssText = `
-            display: none;
-        `;
-        ids_ocultos_seleccionados.innerHTML = 'False';
-
-        let html_linkDiv_cont_1_3 = document.createElement('div');
-        html_seleccion_grupos_cont_1.appendChild(html_linkDiv_cont_1_3);
-        html_linkDiv_cont_1_3.style.cssText = `
-            width: 100%;
-            display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
-            padding: 2em; 
-            background-color: #0c0c0c; 
-            z-index: 9998;
-            overflow-y: scroll
-        `;
-
-        for (let i = 0; i < arr.length; i++) {{
-            let html_linkDiv_1_3_1 = document.createElement('div');        
-            // html_linkDiv_1_3_1.innerHTML = '<p>' + arr[i].index + '</p>' + '<img src="' + arr[i].img_url + '"/>' + '<p>' + arr[i].title + '</p>';
-            html_linkDiv_1_3_1.innerHTML = '<img src="' + arr[i].img_url + '"/>' + '<p>' + arr[i].title + '</p>';
-            html_linkDiv_cont_1_3.appendChild(html_linkDiv_1_3_1);
-
-            html_linkDiv_1_3_1.style.cssText = `
-                color: #000;
-                width: 100px;
-                height: 200px;
-                padding: 1em;
-                background-color: #0d0;
-                border-radius: 5px;
-                z-index: 9999;
-                border: 1px solid #000;
-                cursor: pointer
-            `;
-            
-            html_linkDiv_1_3_1.addEventListener('click', () => {{
-                arr2[arr[i].index].seleccionado ? (
-                        arr2[arr[i].index].seleccionado = false,
-                        html_linkDiv_1_3_1.style.backgroundColor = '#d00'
-                    ) : (
-                        arr2[arr[i].index].seleccionado = true,
-                        html_linkDiv_1_3_1.style.backgroundColor = '#0d0'
-                    );
-            }});
-            arr2.push({{
-                grupo_index: i,
-                seleccionado: true
-            }});
-        }}
-        html_linkDivButtonDown_cont_1_2.addEventListener('click', () => {{
-            ids_ocultos.innerHTML = '';
-            arr2.forEach(obj => {{
-                if(obj.seleccionado === true){{
-                    ids_ocultos.innerHTML += obj.grupo_index + ', ';
-                }};
-            }});
-            html_seleccion_grupos_cont_1.style.cssText = `
-                display: none;
-            `;
-            ids_ocultos_seleccionados.innerHTML = 'True';
-        }});
-        html_seleccion_grupos_cont_1.style.cssText = `
-            color: #fff;
-            font-size: 1.2em;
-            position: fixed; 
-            top: 0; 
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            padding: 2em; 
-            background-color: #0c0c0c; 
-            // border-radius: 5px; 
-            z-index: 9999;
-            // border: 1px solid #000;
-        `;
-        document.body.appendChild(html_seleccion_grupos_cont_1);
-    """
+    info_to_user_message = "Por favor, selecciona los grupos donde deseas compartir"
+    info_to_user_div = pop_up.GROUP_SELECTION(info_to_user_message, arr_obj_grupos_obtenidos)
     driver.execute_script(info_to_user_div)
 
 def esperar_hasta_cliente_selecciona_grupos():
@@ -415,21 +352,7 @@ def informe_porcenataje_completado():
 def crear_post():
     # Avisar al usuario de escribir el post por consola
     info_to_user_message = "Por favor, escribe el post en la consola/terminal abierta del principio"
-    info_to_user_div = f"""
-        var mensaje = document.createElement('div'); 
-        mensaje.textContent = '{info_to_user_message}'; 
-        mensaje.style.cssText = `
-            font-size: 1.2em; 
-            position: fixed; 
-            top: 15px; 
-            left: 15px; 
-            padding: 40px; 
-            background-color: yellow; 
-            border-radius: 5px; 
-            z-index: 9999
-        `; 
-        document.body.appendChild(mensaje);
-    """
+    info_to_user_div = pop_up.QUICK_MESSAGE(info_to_user_message)
     driver.execute_script(info_to_user_div)
 
     print("Escribe aquí tu post línea por línea (presiona Enter dos veces para terminar):\n")
@@ -555,12 +478,10 @@ verify_page_title()
 cookies()
 # INICIO SESIÓN
 ###################### Iniciar sesión automáticamente ######################
-# Para iniciar sesión automáticamente, puedes añadir tus datos entre comillas (simples o dobles) así: 
-##### ...ask_user_email('aquí_tu_email')
-##### ...ask_user_password('aquí_tu_contraseña')
+# Para iniciar sesión automáticamente, puedes añadir tus datos entre comillas (simples o dobles) separadas por una coma, así: 
+# -->> user_email, user_password = ask_credentials('aquí_tu_email', 'aquí_tu_contraseña') <<--
 # aquí debajo:
-user_email = ask_user_email()
-user_password = ask_user_password()
+user_email, user_password = ask_credentials()
 ############################################################################
 facebook_login()
 # SELECCIÓN GRUPOS 

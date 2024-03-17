@@ -3,7 +3,7 @@
 ## Bot for post on Facebook Groups
 This bot **post automatically** for you in every each of your Facebook groups, allowing you to **select witch group** you want to post it or witch you won't.
 
-You can download it here: [DOWNLOAD APP HERE](https://drive.google.com/file/d/1DJzEI3p_8cHN2EfIvH1ZsbdgW5HlBmdf/view?usp=sharing)
+You can download it here: [DOWNLOAD APP HERE](https://drive.google.com/drive/folders/1TLD9rNhmRasQQvKDkr3XrRPsBRyoBVUq?usp=sharing)
 
 This script can run in the background or in parallel. That's the difference between Selenium and Pyautogui, which was the first thing I used on my first Bot project.
 
