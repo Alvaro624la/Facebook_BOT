@@ -1,7 +1,9 @@
 <!-- # Facebook BOT -->
 ![Facebook BOT, by Alvaro624la - logotype.](/logo.png)
 ## Bot for post on Facebook Groups
-This bot post for you in every each group that you have on your Facebook groups menu, getting all your group links from there.
+This bot **post automatically** for you in every each of your Facebook groups, allowing you to **select witch group** you want to post it or witch you won't.
+
+You can download it here: [DOWNLOAD APP HERE](https://drive.google.com/file/d/1DJzEI3p_8cHN2EfIvH1ZsbdgW5HlBmdf/view?usp=sharing)
 
 This script can run in the background or in parallel. That's the difference between Selenium and Pyautogui, which was the first thing I used on my first Bot project.
 
@@ -30,6 +32,7 @@ Install cx-Freeze in your terminal:
 
 Build the complete executable folder
 - ```pyinstaller py_file_name.py``` 
+
 Example: pyinstaller robot_fb.py
 
 ## How access to this executable proyect?
@@ -46,11 +49,15 @@ Example: pyinstaller robot_fb.py
 
 ### Tools and Python Modules:
 - **Selenium**: A tool for automating web browsers. It provides a way for developers to write scripts in various programming languages to automate interactions with web applications. I personally used Python.
+- **webdriver_manager**: To simplify management of binary drivers for different browsers. To not to repeat all these steps (download the chromedriver binary...unzip it somewhere on your PC...set the path to this driver) again and again every time a new version of the driver is released.
 - **re**: Module in Python for regular expressions. It provides a set of functions that allows us to search a string for a match or replace matches with other strings. I use this module to find all the group links.
 - **time**: A time module in Python that provides various time-related functions. I used that to have some time between some process to pause the script execution to production or for me as a developer to make the tests. Ex: ```time.sleep(5)```
 
+## Done:
+- Get all your group links.
+- Show all the groups with their name and image, and select in what group you want to post or what you don't.
+
 ## Developing:
-- Show all the group names and select what you want to post or what you don't.
 - Maybe improve the way you can write the post.
 - Post images, videos, and more. Not only text.
 

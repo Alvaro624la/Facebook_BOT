@@ -8,6 +8,10 @@ import re
 import time 
 # alternativa para el módulo time: 'from time import sleep' y luego usar solo 'sleep()' o solo 'localtime()'
 
+# DRIVER MANAGER https://github.com/SergeyPirogov/webdriver_manager?tab=readme-ov-file#use-with-chrome 
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
+
 # MODULOS PROPIOS
 from locators import LocatorsClass as loc
 
@@ -48,9 +52,10 @@ def ask_user_password(user_password=None):
 # Configurar las opciones del navegador para desactivar las notificaciones de forma predeterminada
 chrome_options = Options()
 chrome_options.add_argument("--disable-notifications")
-driver_path = './chromedriver-win64/chromedriver.exe'
 # se crea una instancia del webdrive chrome
-driver = webdriver.Chrome(service=Service(driver_path), options=chrome_options)
+# driver_path = './chromedriver-win64/chromedriver.exe'
+# driver = webdriver.Chrome(service=Service(driver_path), options=chrome_options)
+driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
 
 def open_url_after_driver_config():
     # abrimos la url y se espera a que esté completamente cargada con el metodo get de driver
