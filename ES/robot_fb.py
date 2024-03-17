@@ -138,7 +138,7 @@ def facebook_login():
         print('Iniciando sesión...')
 
     # Comprobación del correcto iniciado sesión (usando try except de manera inversa)
-    # try:            
+    try:            
         # try:
             # Localizamos y clicamos en btn: ¿Has olvidado la contraseña?
             # btn_olvidado_contraseña = WebDriverWait(driver, 5).until(EC.presence_of_element_located(loc.LOGIN_FORGOTTEN_PASS_LINK))
@@ -150,9 +150,13 @@ def facebook_login():
         # except:
         # Detectar algún mensaje de error en el inicio de sesión
         
-        # try:
-        #     WebDriverWait(driver, 0).until(EC.presence_of_element_located(loc.LOGIN_ERR_MSG_1))
-            
+        try:
+            WebDriverWait(driver, 0).until(EC.presence_of_element_located(loc.LOGIN_ERR_MSG_1))
+            info_to_user_message = "Error al iniciar sesión. Siga los pasos que Facebook le marca, para iniciar sesión por completo"
+            info_to_user_div = pop_up.QUICK_MESSAGE(info_to_user_message)
+            driver.execute_script(info_to_user_div)
+            # Localizar el boton de grupos de Facebook. Significa que hemos iniciado sesión con éxito. Pongo 999 de espera por si la cuenta tiene verificacion en dos pasos con el movil para dar tiempo a completarla y entrar en facebook, y seguir el proceso
+            WebDriverWait(driver, 60).until(EC.presence_of_element_located(loc.GROUPS_BTN))
         #     # html_input_user_email = driver.find_element(By.ID, "credentials_name_input")
         #     # html_input_user_password = driver.find_element(By.ID, "credentials_password_input")
         #     # html_input_user_email.clear()
@@ -169,9 +173,13 @@ def facebook_login():
         #     driver.get("https://www.facebook.com/")
         #     ask_credentials()
         #     facebook_login()
-        # except:
-        #     WebDriverWait(driver, 0).until(EC.presence_of_element_located(loc.LOGIN_ERR_MSG_2))
-
+        except:
+            WebDriverWait(driver, 0).until(EC.presence_of_element_located(loc.LOGIN_ERR_MSG_2))
+            info_to_user_message = "Error al iniciar sesión. Siga los pasos que Facebook le marca, para iniciar sesión por completo"
+            info_to_user_div = pop_up.QUICK_MESSAGE(info_to_user_message)
+            driver.execute_script(info_to_user_div)
+            # Localizar el boton de grupos de Facebook. Significa que hemos iniciado sesión con éxito. Pongo 999 de espera por si la cuenta tiene verificacion en dos pasos con el movil para dar tiempo a completarla y entrar en facebook, y seguir el proceso
+            WebDriverWait(driver, 60).until(EC.presence_of_element_located(loc.GROUPS_BTN))
         #     # html_input_user_email = driver.find_element(By.ID, "credentials_name_input")
         #     # html_input_user_password = driver.find_element(By.ID, "credentials_password_input")
         #     # html_input_user_email.clear()
@@ -188,14 +196,10 @@ def facebook_login():
         #     driver.get("https://www.facebook.com/")
         #     ask_credentials()
         #     facebook_login()
-    # except:
-    # Localizar el boton de grupos de Facebook. Significa que hemos iniciado sesión con éxito.
-    # info_to_user_message = "Siga los pasos para iniciar sesión por completo"
-    info_to_user_message = "Error al iniciar sesión. Siga los pasos que Facebook le marca, para iniciar sesión por completo"
-    info_to_user_div = pop_up.QUICK_MESSAGE(info_to_user_message)
-    driver.execute_script(info_to_user_div)
-    # pongo 999 de espera por si la cuenta tiene verificacion en dos pasos con el movil para dar tiempo a completarla y entrar en facebook, y seguir el proceso
-    WebDriverWait(driver, 999).until(EC.presence_of_element_located(loc.GROUPS_BTN))
+    except:
+        # Localizar el boton de grupos de Facebook. Significa que hemos iniciado sesión con éxito. Pongo 999 de espera por si la cuenta tiene verificacion en dos pasos con el movil para dar tiempo a completarla y entrar en facebook, y seguir el proceso
+        WebDriverWait(driver, 60).until(EC.presence_of_element_located(loc.GROUPS_BTN))
+
 
 
 ### IR A TUS GRUPOS
@@ -349,35 +353,56 @@ def informe_porcenataje_completado():
 ######################################################################################################
 ################################# EL USUARIO ESCRIBE EL POST DESEADO #################################
 
+# def crear_post():
+#     # Avisar al usuario de escribir el post por consola
+#     info_to_user_message = "Por favor, escribe el post en la consola/terminal abierta del principio"
+#     info_to_user_div = pop_up.QUICK_MESSAGE(info_to_user_message)
+#     driver.execute_script(info_to_user_div)
+
+#     print("Escribe aquí tu post línea por línea (presiona Enter dos veces para terminar):\n")
+#     lineas = []
+#     while True:
+#         linea = input()
+#         # Si en linea hay contenido, es True. Si es "", es False y termina el bucle
+#         if linea:
+#             lineas.append(linea)
+#         else:
+#             break
+#     post = "\n".join(lineas)
+    
+#     if post.strip() == '':
+#         print('Error: Sin contenido. Por favor, escribe o introduce contenido para generar el post.')
+#         crear_post()
+#     else:
+#         # El usuario revisa su post y confirma para proceder a compartir, si no, vuelve a escribir el post de nuevo
+#         print("\nTu post será el siguiente:")
+#         print(post)
+#         ask_if_secure_post = input('Estas seguro de querer publicarlo en todos los grupos (s/n): ')
+#         if ask_if_secure_post.lower() not in ['y', 'yes', 's', 'si'] : crear_post()
+
+#         return post
+    
 def crear_post():
-    # Avisar al usuario de escribir el post por consola
-    info_to_user_message = "Por favor, escribe el post en la consola/terminal abierta del principio"
-    info_to_user_div = pop_up.QUICK_MESSAGE(info_to_user_message)
+    # Ventana emergente para que el cliente cree el post
+    info_to_user_message = "Escribe aquí lo que quieres publicar y clica en Publicar cuando estés seguro y quieras compartirlo en todos los grupos anteriormente seleccionados"
+    info_to_user_div = pop_up.CREATE_POST(info_to_user_message)
     driver.execute_script(info_to_user_div)
 
-    print("Escribe aquí tu post línea por línea (presiona Enter dos veces para terminar):\n")
-    lineas = []
-    while True:
-        linea = input()
-        # Si en linea hay contenido, es True. Si es "", es False y termina el bucle
-        if linea:
-            lineas.append(linea)
-        else:
-            break
-    post = "\n".join(lineas)
-    
-    if post.strip() == '':
-        print('Error: Sin contenido. Por favor, escribe o introduce contenido para generar el post.')
-        crear_post()
-    else:
-        # El usuario revisa su post y confirma para proceder a compartir, si no, vuelve a escribir el post de nuevo
-        print("\nTu post será el siguiente:")
-        print(post)
-        ask_if_secure_post = input('Estas seguro de querer publicarlo en todos los grupos (s/n): ')
-        if ask_if_secure_post.lower() not in ['y', 'yes', 's', 'si'] : crear_post()
+    post_creado = driver.find_element(By.ID, "post_creado")
+    while post_creado.get_attribute("innerHTML") != 'True':
+        time.sleep(1)
+        print('Esperando para crear el post para publicar...')
 
-        return post
+    html_textarea_post_created = driver.find_element(By.ID, "create_post_input")
+    post = html_textarea_post_created.get_attribute("value")
 
+    # if post.strip() == '':
+    #     print('Error: Sin contenido. Por favor, escribe o introduce contenido para generar el post.')
+    #     crear_post()
+    # else:
+    #     return post
+
+    return post
 
 ################################# EL USUARIO ESCRIBE EL POST DESEADO #################################
 ######################################################################################################
